@@ -97,12 +97,12 @@ export const updateAdmin = async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
-  console.log(nickname)
-  console.log(jenis_kelamin)
-  console.log(role)
-  console.log(email)
-  console.log(password)
-  console.log(confirmPassword)
+  console.log(nickname);
+  console.log(jenis_kelamin);
+  console.log(role);
+  console.log(email);
+  console.log(password);
+  console.log(confirmPassword);
   let hashPassword;
   if (password === '' || password === null) {
     hashPassword = user.password;
@@ -160,4 +160,16 @@ export const deleteAdmin = async (req, res) => {
   } catch (error) {
     res.status(400).json({ msg: error.message });
   }
+};
+
+export const Login = async (req, res) => {
+  const admin = await AdminModel.findOne({
+    where: {
+      email: req.body.email
+    }
+  });
+  if (!admin) return res.status(404).json({ msg: 'Admin tidak ditemukan' });
+  const match = await argon2.verify(admin.password, req.body.password);
+  if (!match) return res.status(400).json({ msg: 'Email atau password salah' });
+  res.status(200).json(admin);
 };
