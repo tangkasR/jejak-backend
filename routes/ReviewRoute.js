@@ -7,6 +7,6 @@ import {
 const router = express.Router();
 
 router.get('/getreviewbywisataid/:id', getReviewByWisataId);
-router.post('/createreview', createReview);
+router.post('/createreview/:id', createReview);
 
 export default router;
