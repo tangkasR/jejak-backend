@@ -24,6 +24,7 @@ export const getReviewByWisataId = async (req, res) => {
 };
 export const createReview = async (req, res) => {
   const { name, review, rating } = req.body;
+  const date = new Date().toLocaleDateString();
   const findWisata = await WisataModel.findOne({
     where: {
       id: req.params.id
@@ -65,6 +66,7 @@ export const createReview = async (req, res) => {
       name: name,
       review: review,
       rating: rating,
+      date: date,
       wisatumId: findWisata.id
     });
     res.status(201).json({ msg: 'review berhasil ditambah' });

@@ -1,4 +1,7 @@
 import WisataModel from '../models/WisataModel.js';
+import ReviewModel from '../models/ReviewModel.js';
+import HotelModel from '../models/HotelModel.js';
+import ReviewHotelModel from '../models/ReviewHotelModel.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -113,6 +116,47 @@ export const deleteWisata = async (req, res) => {
       }
     });
     if (!wisata) return res.status(404).json({ msg: 'Wisata tidak ditemukan' });
+
+    // delete hotel dan review hotel yang berelasi
+    const hotels = await HotelModel.findAll();
+    const reviewsHotel = await ReviewHotelModel.findAll();
+    if (hotels) {
+      hotels.forEach(async hotel => {
+        if (hotel.wisatumId === wisata.id) {
+          const filepath = `./public/hotel_photo/${hotel.image}`;
+          fs.unlinkSync(filepath);
+          await HotelModel.destroy({
+            where: {
+              id: hotel.id
+            }
+          });
+          reviewsHotel.forEach(async review => {
+            if (review.hotelId === hotel.id) {
+              await ReviewHotelModel.destroy({
+                where: {
+                  id: review.id
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+    // end delete hotel yang berelasi
+    // delete review yang berelasi
+    const reviews = await ReviewModel.findAll();
+    if (reviews) {
+      reviews.forEach(async review => {
+        if (review.wisatumId === wisata.id) {
+          await ReviewModel.destroy({
+            where: {
+              id: review.id
+            }
+          });
+        }
+      });
+    }
+    // end delete review yang berelasi
     try {
       const filepath = `./public/wisata_photo/${wisata.image}`;
       fs.unlinkSync(filepath);

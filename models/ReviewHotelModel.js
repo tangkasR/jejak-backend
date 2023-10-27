@@ -1,18 +1,18 @@
 import { Sequelize } from 'sequelize';
 import db from '../config/Database.js';
-import WisataModel from './WisataModel.js';
+import HotelModel from './HotelModel.js';
 const { DataTypes } = Sequelize;
 
-const ReviewModel = db.define(
-  'review',
+const ReviewHotelModel = db.define(
+  'review_hotel',
   {
     name: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     review: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: true
     },
     rating: {
       type: DataTypes.INTEGER,
@@ -28,7 +28,7 @@ const ReviewModel = db.define(
   }
 );
 
-WisataModel.hasMany(ReviewModel);
-ReviewModel.belongsTo(WisataModel);
+HotelModel.hasMany(ReviewHotelModel);
+ReviewHotelModel.belongsTo(HotelModel);
 
-export default ReviewModel;
+export default ReviewHotelModel;
