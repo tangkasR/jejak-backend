@@ -9,10 +9,6 @@ const AdminModel = db.define(
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-        len: [3, 100]
-      }
     },
     jenis_kelamin: {
       type: DataTypes.STRING,
@@ -21,24 +17,14 @@ const AdminModel = db.define(
     role: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: true
-      }
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-        isEmail: true
-      }
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        notEmpty: true
-      }
     },
     image: {
       type: DataTypes.STRING,

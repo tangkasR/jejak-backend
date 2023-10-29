@@ -1,7 +1,7 @@
-import AdminModel from '../models/AdminModel.js';
-import argon2 from 'argon2';
-import path from 'path';
-import fs from 'fs';
+import AdminModel from "../models/AdminModel.js";
+import argon2 from "argon2";
+import path from "path";
+import fs from "fs";
 
 export const getAdminById = async (req, res) => {
   try {
@@ -16,33 +16,41 @@ export const getAdminById = async (req, res) => {
   }
 };
 export const createAdmin = async (req, res) => {
-  if (req.file === null) {
-    return res.status(400).json({ msg: 'no such file' });
+  if (
+    !req.body.name ||
+    !req.body.jenis_kelamin ||
+    !req.body.email ||
+    !req.body.password ||
+    !req.body.confirmPassword
+  ) {
+    return res.status(400).json({ msg: "Tolong masukan semua inputan" });
+  }
+  if (!req.files) {
+    return res.status(400).json({ msg: "Tolong masukan foto" });
+  }
+  if (req.body.password !== req.body.confirmPassword) {
+    return res
+      .status(400)
+      .json({ msg: "Password dan konfirmasi password tidak sesuai" });
   }
   const nickname = req.body.name;
   const jenis_kelamin = req.body.jenis_kelamin;
-  const role = 'admin';
+  const role = "admin";
   const email = req.body.email;
   const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
   const file = req.files.file;
 
   const ext = path.extname(file.name);
   const fileName = file.md5 + ext;
 
-  const url = `${req.protocol}://${req.get('host')}/admin_photo/${fileName}`;
-  const allowedType = ['.png', '.jpeg', '.jpg'];
+  const url = `${req.protocol}://${req.get("host")}/admin_photo/${fileName}`;
+  const allowedType = [".png", ".jpeg", ".jpg"];
   if (!allowedType.includes(ext.toLowerCase())) {
-    return res.status(422).json({ msg: 'Invalid image' });
-  }
-  if (password !== confirmPassword) {
-    res
-      .status(400)
-      .json({ msg: 'Password dan konfirmasi password tidak sesuai' });
+    return res.status(422).json({ msg: "Invalid image" });
   }
   const hashPassword = await argon2.hash(password);
 
-  file.mv(`./public/admin_photo/${fileName}`, async err => {
+  file.mv(`./public/admin_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });
     try {
       await AdminModel.create({
@@ -54,57 +62,62 @@ export const createAdmin = async (req, res) => {
         image: fileName,
         url: url
       });
-      res.status(201).json({ msg: 'Behasil registrasi' });
+      res.status(201).json({ msg: "Behasil registrasi" });
     } catch (error) {
       console.log(error.message);
     }
   });
 };
 export const updateAdmin = async (req, res) => {
+  if (
+    !req.body.name ||
+    !req.body.jenis_kelamin ||
+    !req.body.email ||
+    !req.body.password ||
+    !req.body.confirmPassword
+  ) {
+    return res.status(400).json({ msg: "Masukan semua inputan" });
+  }
+
   const admin = await AdminModel.findOne({
     where: {
       id: req.params.id
     }
   });
-  if (!admin) return res.status(404).json({ msg: 'Admin tidak ditemukan' });
+  if (!admin) return res.status(404).json({ msg: "Admin tidak ditemukan" });
 
-  let fileName = '';
+  let fileName = "";
 
   if (!req.files) {
     fileName = admin.image;
   } else {
     const file = req.files.file;
     const ext = path.extname(file.name);
-    const allowedType = ['.png', '.jpeg', '.jpg'];
+    const allowedType = [".png", ".jpeg", ".jpg"];
 
     fileName = file.md5 + ext;
 
     if (!allowedType.includes(ext.toLowerCase())) {
-      return res.status(422).json({ msg: 'Invalid image' });
+      return res.status(422).json({ msg: "Invalid image" });
     }
 
     const filepath = `./public/admin_photo/${admin.image}`;
     fs.unlinkSync(filepath);
 
-    file.mv(`./public/admin_photo/${fileName}`, err => {
+    file.mv(`./public/admin_photo/${fileName}`, (err) => {
       if (err) return res.status(500).json({ msg: err.message });
     });
   }
-  const url = `${req.protocol}://${req.get('host')}/admin_photo/${fileName}`;
+
+  const url = `${req.protocol}://${req.get("host")}/admin_photo/${fileName}`;
   const nickname = req.body.name;
   const jenis_kelamin = req.body.jenis_kelamin;
-  const role = 'admin';
+  const role = "admin";
   const email = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
-  console.log(nickname);
-  console.log(jenis_kelamin);
-  console.log(role);
-  console.log(email);
-  console.log(password);
-  console.log(confirmPassword);
   let hashPassword;
-  if (password === '' || password === null) {
+  if (password === "" || password === null) {
     hashPassword = user.password;
   } else {
     hashPassword = await argon2.hash(password);
@@ -112,7 +125,7 @@ export const updateAdmin = async (req, res) => {
   if (password !== confirmPassword) {
     res
       .status(400)
-      .json({ msg: 'Password dan konfirmasi password tidak sesuai' });
+      .json({ msg: "Password dan konfirmasi password tidak sesuai" });
   }
   try {
     await AdminModel.update(
@@ -131,7 +144,7 @@ export const updateAdmin = async (req, res) => {
         }
       }
     );
-    res.status(200).json({ msg: 'admin berhasil Update' });
+    res.status(200).json({ msg: "admin berhasil Update" });
   } catch (error) {
     res.status(400).json({ msg: error.message });
   }
@@ -144,7 +157,7 @@ export const deleteAdmin = async (req, res) => {
       }
     });
     console.log(admin);
-    if (!admin) return res.status(404).json({ msg: 'admin tidak ditemukan' });
+    if (!admin) return res.status(404).json({ msg: "admin tidak ditemukan" });
     try {
       const filepath = `./public/admin_photo/${admin.image}`;
       fs.unlinkSync(filepath);
@@ -153,7 +166,7 @@ export const deleteAdmin = async (req, res) => {
           id: req.params.id
         }
       });
-      res.status(200).json({ msg: 'Berhasil menghapus akun' });
+      res.status(200).json({ msg: "Berhasil menghapus akun" });
     } catch (error) {
       console.log(error);
     }
@@ -163,13 +176,20 @@ export const deleteAdmin = async (req, res) => {
 };
 
 export const Login = async (req, res) => {
+  if (!req.body.email || !req.body.email) {
+    return res.status(400).json({ msg: "Masukan semua input" });
+  }
   const admin = await AdminModel.findOne({
     where: {
       email: req.body.email
     }
   });
-  if (!admin) return res.status(404).json({ msg: 'Admin tidak ditemukan' });
+  if (!admin) {
+    return res.status(404).json({ msg: "Email atau password salah" });
+  }
   const match = await argon2.verify(admin.password, req.body.password);
-  if (!match) return res.status(400).json({ msg: 'Email atau password salah' });
+  if (!match) {
+    return res.status(404).json({ msg: "Email atau password salah" });
+  }
   res.status(200).json(admin);
 };

@@ -1,5 +1,5 @@
-import ReviewModel from '../models/ReviewModel.js';
-import WisataModel from '../models/WisataModel.js';
+import ReviewModel from "../models/ReviewModel.js";
+import WisataModel from "../models/WisataModel.js";
 
 export const getReviewByWisataId = async (req, res) => {
   try {
@@ -23,6 +23,9 @@ export const getReviewByWisataId = async (req, res) => {
   }
 };
 export const createReview = async (req, res) => {
+  if (!req.body.name || !req.body.review || !req.body.rating) {
+    return res.status(400).json({ msg: "Masukan semua inputan" });
+  }
   const { name, review, rating } = req.body;
   const date = new Date().toLocaleDateString();
   const findWisata = await WisataModel.findOne({
@@ -31,7 +34,7 @@ export const createReview = async (req, res) => {
     }
   });
   if (!findWisata) {
-    return res.status(404).json({ msg: 'wisata tidak ditemukan' });
+    return res.status(404).json({ msg: "wisata tidak ditemukan" });
   }
   let totalRating;
   let totalRivewers;
@@ -69,7 +72,7 @@ export const createReview = async (req, res) => {
       date: date,
       wisatumId: findWisata.id
     });
-    res.status(201).json({ msg: 'review berhasil ditambah' });
+    res.status(201).json({ msg: "review berhasil ditambah" });
   } catch (error) {
     res.status(500).json({ msg: error.message });
   }

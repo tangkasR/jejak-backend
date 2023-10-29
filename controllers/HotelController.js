@@ -1,7 +1,7 @@
-import HotelModel from '../models/HotelModel.js';
-import WisataModel from '../models/WisataModel.js';
-import path from 'path';
-import fs from 'fs';
+import HotelModel from "../models/HotelModel.js";
+import WisataModel from "../models/WisataModel.js";
+import path from "path";
+import fs from "fs";
 
 export const getAllHotel = async (req, res) => {
   try {
@@ -52,19 +52,27 @@ export const getHotelById = async (req, res) => {
   }
 };
 export const createHotel = async (req, res) => {
+  if (
+    !req.body.nama ||
+    !req.body.lokasi ||
+    !req.body.deskripsi ||
+    !req.body.wisatumId
+  ) {
+    return res.status(400).json({ msg: "Masukan semua inputan" });
+  }
   if (req.files === null) {
-    return res.status(400).json({ msg: 'File gambar tolong dimasukan' });
+    return res.status(400).json({ msg: "File gambar tolong dimasukan" });
   }
   const { nama, lokasi, deskripsi, wisatumId } = req.body;
   const file = req.files.file;
   const ext = path.extname(file.name);
   const fileName = file.md5 + ext;
-  const url = `${req.protocol}://${req.get('host')}/hotel_photo/${fileName}`;
-  const allowedType = ['.png', '.jpeg', '.jpg'];
+  const url = `${req.protocol}://${req.get("host")}/hotel_photo/${fileName}`;
+  const allowedType = [".png", ".jpeg", ".jpg"];
   if (!allowedType.includes(ext.toLowerCase())) {
-    return res.status(422).json({ msg: 'Invalid image' });
+    return res.status(422).json({ msg: "Invalid image" });
   }
-  file.mv(`./public/hotel_photo/${fileName}`, async err => {
+  file.mv(`./public/hotel_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });
     try {
       await HotelModel.create({
@@ -75,7 +83,7 @@ export const createHotel = async (req, res) => {
         url: url,
         wisatumId: wisatumId
       });
-      res.status(201).json({ msg: 'Hotel berhasil ditambah' });
+      res.status(201).json({ msg: "Hotel berhasil ditambah" });
     } catch (error) {
       console.log(error.message);
     }
@@ -87,26 +95,34 @@ export const updateHotel = async (req, res) => {
       id: req.params.id
     }
   });
-  if (!hotel) return res.status(404).json({ msg: 'Hotel tidak ditemukan' });
-  let fileName = '';
+  if (!hotel) return res.status(404).json({ msg: "Hotel tidak ditemukan" });
+  if (
+    !req.body.nama ||
+    !req.body.lokasi ||
+    !req.body.deskripsi ||
+    !req.body.wisatumId
+  ) {
+    return res.status(400).json({ msg: "Masukan semua inputan" });
+  }
+  let fileName = "";
   if (!req.files) {
     fileName = hotel.image;
   } else {
     const file = req.files.file;
     const ext = path.extname(file.name);
-    const allowedType = ['.png', '.jpeg', '.jpg'];
+    const allowedType = [".png", ".jpeg", ".jpg"];
     fileName = file.md5 + ext;
     if (!allowedType.includes(ext.toLowerCase())) {
-      return res.status(422).json({ msg: 'Invalid image' });
+      return res.status(422).json({ msg: "Invalid image" });
     }
     const filepath = `./public/hotel_photo/${hotel.image}`;
     fs.unlinkSync(filepath);
-    file.mv(`./public/hotel_photo/${fileName}`, err => {
+    file.mv(`./public/hotel_photo/${fileName}`, (err) => {
       if (err) return res.status(500).json({ msg: err.message });
     });
   }
   const { nama, lokasi, deskripsi, wisatumId } = req.body;
-  const url = `${req.protocol}://${req.get('host')}/hotel_photo/${fileName}`;
+  const url = `${req.protocol}://${req.get("host")}/hotel_photo/${fileName}`;
   try {
     await HotelModel.update(
       {
@@ -123,7 +139,7 @@ export const updateHotel = async (req, res) => {
         }
       }
     );
-    res.status(200).json({ msg: 'Hotel berhasil diubah' });
+    res.status(200).json({ msg: "Hotel berhasil diubah" });
   } catch (error) {
     console.log(error.message);
   }
@@ -135,7 +151,7 @@ export const deleteHotel = async (req, res) => {
         id: req.params.id
       }
     });
-    if (!hotel) return res.status(404).json({ msg: 'Hotel tidak ditemukan' });
+    if (!hotel) return res.status(404).json({ msg: "Hotel tidak ditemukan" });
     try {
       const filepath = `./public/hotel_photo/${hotel.image}`;
       fs.unlinkSync(filepath);
@@ -144,7 +160,7 @@ export const deleteHotel = async (req, res) => {
           id: req.params.id
         }
       });
-      res.status(200).json({ msg: 'Hotel berhasil dihapus' });
+      res.status(200).json({ msg: "Hotel berhasil dihapus" });
     } catch (error) {
       console.log(error);
     }
