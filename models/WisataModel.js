@@ -1,10 +1,10 @@
-import { Sequelize } from 'sequelize';
-import db from '../config/Database.js';
+import { Sequelize } from "sequelize";
+import db from "../config/Database.js";
 
 const { DataTypes } = Sequelize;
 
 const WisataModel = db.define(
-  'wisata',
+  "wisata",
   {
     nama: {
       type: DataTypes.STRING,
@@ -28,6 +28,14 @@ const WisataModel = db.define(
     },
     url: {
       type: DataTypes.STRING,
+      allowNull: false
+    },
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
       allowNull: false
     },
     total_rating: {

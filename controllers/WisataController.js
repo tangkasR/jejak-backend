@@ -30,7 +30,9 @@ export const createWisata = async (req, res) => {
     !req.body.nama ||
     !req.body.kategori ||
     !req.body.lokasi ||
-    !req.body.deskripsi
+    !req.body.deskripsi ||
+    !req.body.latitude ||
+    !req.body.longitude
   ) {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
@@ -38,7 +40,7 @@ export const createWisata = async (req, res) => {
     return res.status(400).json({ msg: "File gambar tolong dimasukan" });
   }
 
-  const { nama, kategori, lokasi, deskripsi } = req.body;
+  const { nama, kategori, lokasi, deskripsi, latitude, longitude } = req.body;
   const file = req.files.file;
   const ext = path.extname(file.name);
   const fileName = file.md5 + ext;
@@ -57,7 +59,9 @@ export const createWisata = async (req, res) => {
         lokasi: lokasi,
         deskripsi: deskripsi,
         image: fileName,
-        url: url
+        url: url,
+        latitude: latitude,
+        longitude: longitude
       });
       res.status(201).json({ msg: "Wisata berhasil ditambah" });
     } catch (error) {
@@ -70,7 +74,9 @@ export const updateWisata = async (req, res) => {
     !req.body.nama ||
     !req.body.kategori ||
     !req.body.lokasi ||
-    !req.body.deskripsi
+    !req.body.deskripsi ||
+    !req.body.latitude ||
+    !req.body.longitude
   ) {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
@@ -102,7 +108,7 @@ export const updateWisata = async (req, res) => {
       if (err) return res.status(500).json({ msg: err.message });
     });
   }
-  const { nama, kategori, lokasi, deskripsi } = req.body;
+  const { nama, kategori, lokasi, deskripsi, latitude, longitude } = req.body;
   const url = `${req.protocol}://${req.get("host")}/wisata_photo/${fileName}`;
   try {
     await WisataModel.update(
@@ -112,7 +118,9 @@ export const updateWisata = async (req, res) => {
         lokasi: lokasi,
         deskripsi: deskripsi,
         image: fileName,
-        url: url
+        url: url,
+        latitude: latitude,
+        longitude: longitude
       },
       {
         where: {
