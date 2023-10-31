@@ -16,6 +16,8 @@ export const getAdminById = async (req, res) => {
   }
 };
 export const createAdmin = async (req, res) => {
+  const dataAdmin = await AdminModel.findAll();
+
   if (
     !req.body.name ||
     !req.body.jenis_kelamin ||
@@ -42,6 +44,17 @@ export const createAdmin = async (req, res) => {
 
   const ext = path.extname(file.name);
   const fileName = file.md5 + ext;
+  let isFilenameSame = false;
+  dataAdmin.forEach((admin) => {
+    if (admin.image === fileName) {
+      isFilenameSame = true;
+    }
+  });
+  if (isFilenameSame === true) {
+    return res
+      .status(400)
+      .json({ msg: "Foto yang dimasukan sudah digunakan! Tolong ganti" });
+  }
 
   const url = `${req.protocol}://${req.get("host")}/admin_photo/${fileName}`;
   const allowedType = [".png", ".jpeg", ".jpg"];
@@ -69,6 +82,7 @@ export const createAdmin = async (req, res) => {
   });
 };
 export const updateAdmin = async (req, res) => {
+  const dataAdmin = await AdminModel.findAll();
   if (
     !req.body.name ||
     !req.body.jenis_kelamin ||
@@ -87,7 +101,7 @@ export const updateAdmin = async (req, res) => {
   if (!admin) return res.status(404).json({ msg: "Admin tidak ditemukan" });
 
   let fileName = "";
-
+  let isFilenameSame = false;
   if (!req.files) {
     fileName = admin.image;
   } else {
@@ -99,6 +113,17 @@ export const updateAdmin = async (req, res) => {
 
     if (!allowedType.includes(ext.toLowerCase())) {
       return res.status(422).json({ msg: "Invalid image" });
+    }
+
+    dataAdmin.forEach((admin) => {
+      if (admin.image === fileName) {
+        isFilenameSame = true;
+      }
+    });
+    if (isFilenameSame === true) {
+      return res.status(400).json({
+        msg: "Foto yang dimasukan sudah digunakan! Tolong ganti atau kosongkan inputan foto"
+      });
     }
 
     const filepath = `./public/admin_photo/${admin.image}`;

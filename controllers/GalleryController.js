@@ -38,6 +38,7 @@ export const getGalleryById = async (req, res) => {
 };
 
 export const createGallery = async (req, res) => {
+  const dataGallery = await GalleryModel.findAll();
   if (!req.files) {
     return res.status(400).json({ msg: "File gambar tolong dimasukan" });
   }
@@ -49,6 +50,17 @@ export const createGallery = async (req, res) => {
   const allowedType = [".png", ".jpeg", ".jpg"];
   if (!allowedType.includes(ext.toLowerCase())) {
     return res.status(422).json({ msg: "Invalid image" });
+  }
+  let isFilenameSame = false;
+  dataGallery.forEach((data) => {
+    if (data.image === fileName) {
+      isFilenameSame = true;
+    }
+  });
+  if (isFilenameSame === true) {
+    return res
+      .status(400)
+      .json({ msg: "Foto yang dimasukan sudah digunakan! Tolong ganti" });
   }
   file.mv(`./public/gallery_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });

@@ -2,6 +2,7 @@ import WisataModel from "../models/WisataModel.js";
 import ReviewModel from "../models/ReviewModel.js";
 import HotelModel from "../models/HotelModel.js";
 import ReviewHotelModel from "../models/ReviewHotelModel.js";
+import GalleryModel from "../models/GalleryModel.js";
 import path from "path";
 import fs from "fs";
 
@@ -26,6 +27,7 @@ export const getWisataById = async (req, res) => {
   }
 };
 export const createWisata = async (req, res) => {
+  const dataWisata = await WisataModel.findAll();
   if (
     !req.body.nama ||
     !req.body.kategori ||
@@ -49,6 +51,17 @@ export const createWisata = async (req, res) => {
   if (!allowedType.includes(ext.toLowerCase())) {
     return res.status(422).json({ msg: "Invalid image" });
   }
+  let isFilenameSame = false;
+  dataWisata.forEach((data) => {
+    if (data.image === fileName) {
+      isFilenameSame = true;
+    }
+  });
+  if (isFilenameSame === true) {
+    return res
+      .status(400)
+      .json({ msg: "Foto yang dimasukan sudah digunakan! Tolong ganti" });
+  }
 
   file.mv(`./public/wisata_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });
@@ -70,6 +83,7 @@ export const createWisata = async (req, res) => {
   });
 };
 export const updateWisata = async (req, res) => {
+  const dataWisata = await WisataModel.findAll();
   if (
     !req.body.nama ||
     !req.body.kategori ||
@@ -88,6 +102,7 @@ export const updateWisata = async (req, res) => {
   if (!wisata) return res.status(404).json({ msg: "wisata tidak ditemukan" });
 
   let fileName = "";
+  let isFilenameSame = false;
   if (!req.files) {
     fileName = wisata.image;
   } else {
@@ -96,7 +111,16 @@ export const updateWisata = async (req, res) => {
     const allowedType = [".png", ".jpeg", ".jpg"];
 
     fileName = file.md5 + ext;
-
+    dataWisata.forEach((data) => {
+      if (data.image === fileName) {
+        isFilenameSame = true;
+      }
+    });
+    if (isFilenameSame === true) {
+      return res.status(400).json({
+        msg: "Foto yang dimasukan sudah digunakan! Tolong ganti atau kosongkan inputan foto"
+      });
+    }
     if (!allowedType.includes(ext.toLowerCase())) {
       return res.status(422).json({ msg: "Invalid image" });
     }
@@ -182,6 +206,23 @@ export const deleteWisata = async (req, res) => {
       });
     }
     // end delete review yang berelasi
+
+    // delete gallery yang berelasi
+    const gallery = await GalleryModel.findAll();
+    if (gallery) {
+      gallery.forEach(async (data) => {
+        if (data.wisatumId === wisata.id) {
+          const filepath = `./public/gallery_photo/${data.image[0]}`;
+          fs.unlinkSync(filepath);
+          await GalleryModel.destroy({
+            where: {
+              id: data.id
+            }
+          });
+        }
+      });
+    }
+    // end delete gallery yang berelasi
     try {
       const filepath = `./public/wisata_photo/${wisata.image}`;
       fs.unlinkSync(filepath);

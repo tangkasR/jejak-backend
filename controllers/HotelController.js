@@ -52,6 +52,7 @@ export const getHotelById = async (req, res) => {
   }
 };
 export const createHotel = async (req, res) => {
+  const dataHotel = await HotelModel.findAll();
   if (
     !req.body.nama ||
     !req.body.lokasi ||
@@ -72,6 +73,17 @@ export const createHotel = async (req, res) => {
   if (!allowedType.includes(ext.toLowerCase())) {
     return res.status(422).json({ msg: "Invalid image" });
   }
+  let isFilenameSame = false;
+  dataHotel.forEach((data) => {
+    if (data.image === fileName) {
+      isFilenameSame = true;
+    }
+  });
+  if (isFilenameSame === true) {
+    return res
+      .status(400)
+      .json({ msg: "Foto yang dimasukan sudah digunakan! Tolong ganti" });
+  }
   file.mv(`./public/hotel_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });
     try {
@@ -90,6 +102,7 @@ export const createHotel = async (req, res) => {
   });
 };
 export const updateHotel = async (req, res) => {
+  const dataHotel = await HotelModel.findAll();
   const hotel = await HotelModel.findOne({
     where: {
       id: req.params.id
@@ -105,6 +118,7 @@ export const updateHotel = async (req, res) => {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
   let fileName = "";
+  let isFilenameSame = false;
   if (!req.files) {
     fileName = hotel.image;
   } else {
@@ -114,6 +128,19 @@ export const updateHotel = async (req, res) => {
     fileName = file.md5 + ext;
     if (!allowedType.includes(ext.toLowerCase())) {
       return res.status(422).json({ msg: "Invalid image" });
+    }
+
+    dataHotel.forEach((data) => {
+      if (data.image === fileName) {
+        isFilenameSame = true;
+      }
+    });
+    if (isFilenameSame === true) {
+      return res
+        .status(400)
+        .json({
+          msg: "Foto yang dimasukan sudah digunakan! Tolong ganti atau kosongkan inputan foto"
+        });
     }
     const filepath = `./public/hotel_photo/${hotel.image}`;
     fs.unlinkSync(filepath);
