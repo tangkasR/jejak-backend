@@ -30,6 +30,10 @@ const WisataModel = db.define(
       type: DataTypes.STRING,
       allowNull: false
     },
+    img_name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     latitude: {
       type: DataTypes.FLOAT,
       allowNull: false

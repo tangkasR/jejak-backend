@@ -1,14 +1,14 @@
-import { Sequelize } from 'sequelize';
-import db from '../config/Database.js';
+import { Sequelize } from "sequelize";
+import db from "../config/Database.js";
 
 const { DataTypes } = Sequelize;
 
 const AdminModel = db.define(
-  'admin',
+  "admin",
   {
     name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     jenis_kelamin: {
       type: DataTypes.STRING,
@@ -16,21 +16,25 @@ const AdminModel = db.define(
     },
     role: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     email: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: false
     },
     image: {
       type: DataTypes.STRING,
       allowNull: false
     },
     url: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    img_name: {
       type: DataTypes.STRING,
       allowNull: false
     }
