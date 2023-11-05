@@ -8,9 +8,8 @@ import WisataRoute from "./routes/WisataRoute.js";
 import HotelRoute from "./routes/HotelRoute.js";
 import ReviewHotelRoute from "./routes/ReviewHotelRoute.js";
 import GalleryRoute from "./routes/GalleryRoute.js";
-
+import session from "express-session";
 import db from "./config/Database.js";
-
 dotenv.config();
 const app = express();
 

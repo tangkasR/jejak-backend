@@ -194,5 +194,37 @@ export const Login = async (req, res) => {
   if (!match) {
     return res.status(404).json({ msg: "Email atau password salah" });
   }
+  const token = process.env.SESSION_SECRET;
+  await AdminModel.update(
+    {
+      token: token
+    },
+    {
+      where: {
+        id: admin.id
+      }
+    }
+  );
+  res.status(200).json(admin);
+};
+
+export const Logout = async (req, res) => {
+  const id = req.params.id;
+
+  const admin = await AdminModel.findOne({
+    where: {
+      id: req.params.id
+    }
+  });
+  await AdminModel.update(
+    {
+      token: null
+    },
+    {
+      where: {
+        id: req.params.id
+      }
+    }
+  );
   res.status(200).json(admin);
 };

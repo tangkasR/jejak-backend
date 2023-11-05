@@ -37,6 +37,10 @@ const AdminModel = db.define(
     img_name: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    token: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   },
   {
