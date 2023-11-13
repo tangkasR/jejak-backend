@@ -2,6 +2,7 @@ import WisataModel from "../models/WisataModel.js";
 import ReviewModel from "../models/ReviewModel.js";
 import HotelModel from "../models/HotelModel.js";
 import ReviewHotelModel from "../models/ReviewHotelModel.js";
+import GalleryModel from "../models/GalleryModel.js";
 import path from "path";
 import fs from "fs";
 
@@ -43,12 +44,13 @@ export const createWisata = async (req, res) => {
   const { nama, kategori, lokasi, deskripsi, latitude, longitude } = req.body;
   const file = req.files.file;
   const ext = path.extname(file.name);
-  const fileName = file.md5 + ext;
+  const fileName = Math.random() + ext;
   const url = `${req.protocol}://${req.get("host")}/wisata_photo/${fileName}`;
   const allowedType = [".png", ".jpeg", ".jpg"];
   if (!allowedType.includes(ext.toLowerCase())) {
     return res.status(422).json({ msg: "Invalid image" });
   }
+  const imgName = file.md5;
 
   file.mv(`./public/wisata_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });
@@ -60,6 +62,7 @@ export const createWisata = async (req, res) => {
         deskripsi: deskripsi,
         image: fileName,
         url: url,
+        img_name: imgName,
         latitude: latitude,
         longitude: longitude
       });
@@ -88,26 +91,29 @@ export const updateWisata = async (req, res) => {
   if (!wisata) return res.status(404).json({ msg: "wisata tidak ditemukan" });
 
   let fileName = "";
+  let imgName = "";
   if (!req.files) {
     fileName = wisata.image;
+    imgName = wisata.img_name;
   } else {
     const file = req.files.file;
-    const ext = path.extname(file.name);
-    const allowedType = [".png", ".jpeg", ".jpg"];
-
-    fileName = file.md5 + ext;
-
-    if (!allowedType.includes(ext.toLowerCase())) {
-      return res.status(422).json({ msg: "Invalid image" });
+    imgName = file.md5;
+    fileName = wisata.image;
+    if (imgName !== wisata.img_name) {
+      const ext = path.extname(file.name);
+      const allowedType = [".png", ".jpeg", ".jpg"];
+      if (!allowedType.includes(ext.toLowerCase())) {
+        return res.status(422).json({ msg: "Invalid image" });
+      }
+      fileName = Math.random() + ext;
+      const filepath = `./public/wisata_photo/${wisata.image}`;
+      fs.unlinkSync(filepath);
+      file.mv(`./public/wisata_photo/${fileName}`, (err) => {
+        if (err) return res.status(500).json({ msg: err.message });
+      });
     }
-
-    const filepath = `./public/wisata_photo/${wisata.image}`;
-    fs.unlinkSync(filepath);
-
-    file.mv(`./public/wisata_photo/${fileName}`, (err) => {
-      if (err) return res.status(500).json({ msg: err.message });
-    });
   }
+
   const { nama, kategori, lokasi, deskripsi, latitude, longitude } = req.body;
   const url = `${req.protocol}://${req.get("host")}/wisata_photo/${fileName}`;
   try {
@@ -119,6 +125,7 @@ export const updateWisata = async (req, res) => {
         deskripsi: deskripsi,
         image: fileName,
         url: url,
+        img_name: imgName,
         latitude: latitude,
         longitude: longitude
       },
@@ -182,6 +189,23 @@ export const deleteWisata = async (req, res) => {
       });
     }
     // end delete review yang berelasi
+
+    // delete gallery yang berelasi
+    const gallery = await GalleryModel.findAll();
+    if (gallery) {
+      gallery.forEach(async (data) => {
+        if (data.wisatumId === wisata.id) {
+          const filepath = `./public/gallery_photo/${data.image}`;
+          fs.unlinkSync(filepath);
+          await GalleryModel.destroy({
+            where: {
+              id: data.id
+            }
+          });
+        }
+      });
+    }
+    // end delete gallery yang berelasi
     try {
       const filepath = `./public/wisata_photo/${wisata.image}`;
       fs.unlinkSync(filepath);

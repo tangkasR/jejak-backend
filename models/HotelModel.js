@@ -26,6 +26,10 @@ const HotelModel = db.define(
       type: DataTypes.STRING,
       allowNull: false
     },
+    img_name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
     total_rating: {
       type: DataTypes.INTEGER,
       allowNull: true

@@ -66,12 +66,14 @@ export const createHotel = async (req, res) => {
   const { nama, lokasi, deskripsi, wisatumId } = req.body;
   const file = req.files.file;
   const ext = path.extname(file.name);
-  const fileName = file.md5 + ext;
+  const fileName = Math.random() + ext;
   const url = `${req.protocol}://${req.get("host")}/hotel_photo/${fileName}`;
   const allowedType = [".png", ".jpeg", ".jpg"];
   if (!allowedType.includes(ext.toLowerCase())) {
     return res.status(422).json({ msg: "Invalid image" });
   }
+
+  const imgName = file.md5;
   file.mv(`./public/hotel_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });
     try {
@@ -81,6 +83,7 @@ export const createHotel = async (req, res) => {
         deskripsi: deskripsi,
         image: fileName,
         url: url,
+        img_name: imgName,
         wisatumId: wisatumId
       });
       res.status(201).json({ msg: "Hotel berhasil ditambah" });
@@ -105,21 +108,27 @@ export const updateHotel = async (req, res) => {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
   let fileName = "";
+  let imgName = "";
   if (!req.files) {
     fileName = hotel.image;
+    imgName = hotel.img_name;
   } else {
     const file = req.files.file;
-    const ext = path.extname(file.name);
-    const allowedType = [".png", ".jpeg", ".jpg"];
-    fileName = file.md5 + ext;
-    if (!allowedType.includes(ext.toLowerCase())) {
-      return res.status(422).json({ msg: "Invalid image" });
+    imgName = file.md5;
+    fileName = hotel.image;
+    if (imgName !== hotel.img_name) {
+      const ext = path.extname(file.name);
+      const allowedType = [".png", ".jpeg", ".jpg"];
+      fileName = Math.random() + ext;
+      if (!allowedType.includes(ext.toLowerCase())) {
+        return res.status(422).json({ msg: "Invalid image" });
+      }
+      const filepath = `./public/hotel_photo/${hotel.image}`;
+      fs.unlinkSync(filepath);
+      file.mv(`./public/hotel_photo/${fileName}`, (err) => {
+        if (err) return res.status(500).json({ msg: err.message });
+      });
     }
-    const filepath = `./public/hotel_photo/${hotel.image}`;
-    fs.unlinkSync(filepath);
-    file.mv(`./public/hotel_photo/${fileName}`, (err) => {
-      if (err) return res.status(500).json({ msg: err.message });
-    });
   }
   const { nama, lokasi, deskripsi, wisatumId } = req.body;
   const url = `${req.protocol}://${req.get("host")}/hotel_photo/${fileName}`;
@@ -131,6 +140,7 @@ export const updateHotel = async (req, res) => {
         deskripsi: deskripsi,
         image: fileName,
         url: url,
+        img_name: imgName,
         wisatumId: wisatumId
       },
       {

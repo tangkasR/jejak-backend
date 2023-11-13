@@ -41,15 +41,14 @@ export const createAdmin = async (req, res) => {
   const file = req.files.file;
 
   const ext = path.extname(file.name);
-  const fileName = file.md5 + ext;
-
+  const fileName = Math.random() + ext;
   const url = `${req.protocol}://${req.get("host")}/admin_photo/${fileName}`;
   const allowedType = [".png", ".jpeg", ".jpg"];
   if (!allowedType.includes(ext.toLowerCase())) {
     return res.status(422).json({ msg: "Invalid image" });
   }
   const hashPassword = await argon2.hash(password);
-
+  const imgName = file.md5;
   file.mv(`./public/admin_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });
     try {
@@ -60,7 +59,8 @@ export const createAdmin = async (req, res) => {
         email: email,
         password: hashPassword,
         image: fileName,
-        url: url
+        url: url,
+        img_name: imgName
       });
       res.status(201).json({ msg: "Behasil registrasi" });
     } catch (error) {
@@ -87,26 +87,28 @@ export const updateAdmin = async (req, res) => {
   if (!admin) return res.status(404).json({ msg: "Admin tidak ditemukan" });
 
   let fileName = "";
-
+  let imgName = "";
   if (!req.files) {
     fileName = admin.image;
+    imgName = admin.img_name;
   } else {
     const file = req.files.file;
-    const ext = path.extname(file.name);
-    const allowedType = [".png", ".jpeg", ".jpg"];
+    imgName = file.md5;
+    fileName = admin.image;
+    if (imgName !== admin.img_name) {
+      const ext = path.extname(file.name);
+      const allowedType = [".png", ".jpeg", ".jpg"];
+      fileName = Math.random() + ext;
+      if (!allowedType.includes(ext.toLowerCase())) {
+        return res.status(422).json({ msg: "Invalid image" });
+      }
+      const filepath = `./public/admin_photo/${admin.image}`;
+      fs.unlinkSync(filepath);
 
-    fileName = file.md5 + ext;
-
-    if (!allowedType.includes(ext.toLowerCase())) {
-      return res.status(422).json({ msg: "Invalid image" });
+      file.mv(`./public/admin_photo/${fileName}`, (err) => {
+        if (err) return res.status(500).json({ msg: err.message });
+      });
     }
-
-    const filepath = `./public/admin_photo/${admin.image}`;
-    fs.unlinkSync(filepath);
-
-    file.mv(`./public/admin_photo/${fileName}`, (err) => {
-      if (err) return res.status(500).json({ msg: err.message });
-    });
   }
 
   const url = `${req.protocol}://${req.get("host")}/admin_photo/${fileName}`;
@@ -136,7 +138,8 @@ export const updateAdmin = async (req, res) => {
         email: email,
         password: hashPassword,
         image: fileName,
-        url: url
+        url: url,
+        img_name: imgName
       },
       {
         where: {
@@ -191,5 +194,37 @@ export const Login = async (req, res) => {
   if (!match) {
     return res.status(404).json({ msg: "Email atau password salah" });
   }
+  const token = process.env.SESSION_SECRET;
+  await AdminModel.update(
+    {
+      token: token
+    },
+    {
+      where: {
+        id: admin.id
+      }
+    }
+  );
+  res.status(200).json(admin);
+};
+
+export const Logout = async (req, res) => {
+  const id = req.params.id;
+
+  const admin = await AdminModel.findOne({
+    where: {
+      id: req.params.id
+    }
+  });
+  await AdminModel.update(
+    {
+      token: null
+    },
+    {
+      where: {
+        id: req.params.id
+      }
+    }
+  );
   res.status(200).json(admin);
 };

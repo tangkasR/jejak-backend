@@ -44,18 +44,20 @@ export const createGallery = async (req, res) => {
   const id = req.params.id;
   const file = req.files.file;
   const ext = path.extname(file.name);
-  const fileName = file.md5 + ext;
+  const fileName = Math.random() + ext;
   const url = `${req.protocol}://${req.get("host")}/gallery_photo/${fileName}`;
   const allowedType = [".png", ".jpeg", ".jpg"];
   if (!allowedType.includes(ext.toLowerCase())) {
     return res.status(422).json({ msg: "Invalid image" });
   }
+  const imgName = file.md5;
   file.mv(`./public/gallery_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: err.message });
     try {
       await GalleryModel.create({
         image: fileName,
         url: url,
+        img_name: imgName,
         wisatumId: id
       });
       res.status(201).json({ msg: "Foto berhasil ditambah" });
