@@ -1,6 +1,16 @@
 import ReviewHotelModel from "../models/ReviewHotelModel.js";
 import HotelModel from "../models/HotelModel.js";
 
+export const getAllReviewHotel = async (req, res) => {
+  try {
+    const response = await ReviewHotelModel.findAll ();
+    res.status (200).json (response);
+  } catch (error) {
+    res.status (500).json ({msg: error.message});
+  }
+};
+
+
 export const getReviewByWisataId = async (req, res) => {
   try {
     const response = await ReviewHotelModel.findAll(

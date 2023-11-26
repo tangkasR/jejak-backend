@@ -1,6 +1,14 @@
 import ReviewModel from "../models/ReviewModel.js";
 import WisataModel from "../models/WisataModel.js";
 
+export const getAllReview = async (req, res) => {
+  try {
+    const response = await ReviewModel.findAll();
+    res.status(200).json(response);
+  } catch (error) {
+    res.status(500).json({ msg: error.message });
+  }
+};
 export const getReviewByWisataId = async (req, res) => {
   try {
     const response = await ReviewModel.findAll(
