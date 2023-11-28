@@ -88,6 +88,13 @@ export const updateAdmin = async (req, res) => {
 
   let fileName = "";
   let imgName = "";
+  let isImageExist = false;
+  const files = fs.readdirSync("./public/admin_photo/");
+  files.forEach((file) => {
+    if (file === admin.image) {
+      isImageExist = true;
+    }
+  });
   if (!req.files) {
     fileName = admin.image;
     imgName = admin.img_name;
@@ -95,10 +102,25 @@ export const updateAdmin = async (req, res) => {
     const file = req.files.file;
     imgName = file.md5;
     fileName = admin.image;
-    if (imgName !== admin.img_name) {
+
+    if (isImageExist === false) {
       const ext = path.extname(file.name);
       const allowedType = [".png", ".jpeg", ".jpg"];
       fileName = Math.random() + ext;
+
+      if (!allowedType.includes(ext.toLowerCase())) {
+        return res.status(422).json({ msg: "Invalid image" });
+      }
+      const filepath = `./public/admin_photo/${admin.image}`;
+      file.mv(`./public/admin_photo/${fileName}`, (err) => {
+        if (err) return res.status(500).json({ msg: err.message });
+      });
+    }
+    if (imgName !== admin.img_name && isImageExist === true) {
+      const ext = path.extname(file.name);
+      const allowedType = [".png", ".jpeg", ".jpg"];
+      fileName = Math.random() + ext;
+
       if (!allowedType.includes(ext.toLowerCase())) {
         return res.status(422).json({ msg: "Invalid image" });
       }
@@ -159,16 +181,26 @@ export const deleteAdmin = async (req, res) => {
         id: req.params.id
       }
     });
-    console.log(admin);
     if (!admin) return res.status(404).json({ msg: "admin tidak ditemukan" });
+    let isImageExist = false;
+    const files = fs.readdirSync("./public/admin_photo/");
+    files.forEach((file) => {
+      if (file === admin.image) {
+        isImageExist = true;
+      }
+    });
     try {
       const filepath = `./public/admin_photo/${admin.image}`;
-      fs.unlinkSync(filepath);
+
+      if (isImageExist === true) {
+        fs.unlinkSync(filepath);
+      }
       await AdminModel.destroy({
         where: {
           id: req.params.id
         }
       });
+
       res.status(200).json({ msg: "Berhasil menghapus akun" });
     } catch (error) {
       console.log(error);

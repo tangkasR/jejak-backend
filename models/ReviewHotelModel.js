@@ -1,10 +1,10 @@
-import { Sequelize } from 'sequelize';
-import db from '../config/Database.js';
-import HotelModel from './HotelModel.js';
+import { Sequelize } from "sequelize";
+import db from "../config/Database.js";
+import HotelModel from "./HotelModel.js";
 const { DataTypes } = Sequelize;
 
 const ReviewHotelModel = db.define(
-  'review_hotel',
+  "review_hotel",
   {
     name: {
       type: DataTypes.STRING,
