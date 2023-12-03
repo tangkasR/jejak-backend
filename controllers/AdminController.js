@@ -2,12 +2,16 @@ import AdminModel from "../models/AdminModel.js";
 import argon2 from "argon2";
 import path from "path";
 import fs from "fs";
+import jwt from "jsonwebtoken";
 
-export const getAdminById = async (req, res) => {
+export const getAdmin = async (req, res) => {
   try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.sendStatus(204);
+
     const response = await AdminModel.findOne({
       where: {
-        id: req.params.id
+        token: refreshToken
       }
     });
     res.status(200).json(response);
@@ -78,10 +82,12 @@ export const updateAdmin = async (req, res) => {
   ) {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.sendStatus(204);
 
   const admin = await AdminModel.findOne({
     where: {
-      id: req.params.id
+      token: refreshToken
     }
   });
   if (!admin) return res.status(404).json({ msg: "Admin tidak ditemukan" });
@@ -176,11 +182,15 @@ export const updateAdmin = async (req, res) => {
 };
 export const deleteAdmin = async (req, res) => {
   try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.sendStatus(204);
+
     const admin = await AdminModel.findOne({
       where: {
-        id: req.params.id
+        token: refreshToken
       }
     });
+    const adminId = admin.id;
     if (!admin) return res.status(404).json({ msg: "admin tidak ditemukan" });
     let isImageExist = false;
     const files = fs.readdirSync("./public/admin_photo/");
@@ -197,10 +207,10 @@ export const deleteAdmin = async (req, res) => {
       }
       await AdminModel.destroy({
         where: {
-          id: req.params.id
+          id: adminId
         }
       });
-
+      res.clearCookie("refreshToken");
       res.status(200).json({ msg: "Berhasil menghapus akun" });
     } catch (error) {
       console.log(error);
@@ -226,37 +236,50 @@ export const Login = async (req, res) => {
   if (!match) {
     return res.status(404).json({ msg: "Email atau password salah" });
   }
-  const token = process.env.SESSION_SECRET;
+  const adminId = admin.id;
+  const refreshToken = jwt.sign({ adminId }, process.env.REFRESH_TOKEN, {
+    expiresIn: "1d"
+  });
   await AdminModel.update(
     {
-      token: token
+      token: refreshToken
     },
     {
       where: {
-        id: admin.id
+        id: adminId
       }
     }
   );
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 1000
+  });
   res.status(200).json(admin);
 };
 
 export const Logout = async (req, res) => {
-  const id = req.params.id;
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.sendStatus(204);
 
   const admin = await AdminModel.findOne({
     where: {
-      id: req.params.id
+      token: refreshToken
     }
   });
+
+  if (!admin) return res.sendStatus(204);
+
+  const adminId = admin.id;
   await AdminModel.update(
     {
       token: null
     },
     {
       where: {
-        id: req.params.id
+        id: adminId
       }
     }
   );
+  res.clearCookie("refreshToken");
   res.status(200).json(admin);
 };

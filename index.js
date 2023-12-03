@@ -8,6 +8,7 @@ import WisataRoute from "./routes/WisataRoute.js";
 import HotelRoute from "./routes/HotelRoute.js";
 import ReviewHotelRoute from "./routes/ReviewHotelRoute.js";
 import GalleryRoute from "./routes/GalleryRoute.js";
+import cookieParser from "cookie-parser";
 import session from "express-session";
 import db from "./config/Database.js";
 dotenv.config();
@@ -19,9 +20,13 @@ const app = express();
 // })();
 // end migrasi
 
-app.use(cors({
-  credentials: true
-}));
+app.use(
+  cors({
+    credentials: true,
+    origin: true
+  })
+);
+app.use(cookieParser());
 app.use(express.json());
 app.use(fileUpload());
 app.use(express.static("public"));
