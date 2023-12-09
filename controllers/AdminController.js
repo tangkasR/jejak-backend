@@ -46,7 +46,7 @@ export const createAdmin = async (req, res) => {
 
   const ext = path.extname(file.name);
   const fileName = Math.random() + ext;
-  const url = `${req.protocol}://${req.get("host")}/admin_photo/${fileName}`;
+  const url = `https://jejak-backend-ef3c7rsig-tangkas-risdiantos-projects.vercel.app/admin_photo/${fileName}`;
   const allowedType = [".png", ".jpeg", ".jpg"];
   if (!allowedType.includes(ext.toLowerCase())) {
     return res.status(422).json({ msg: "Invalid image" });
