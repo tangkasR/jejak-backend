@@ -51,7 +51,7 @@ export const createAdmin = async (req, res) => {
   const hashPassword = await argon2.hash(password);
   const imgName = file.md5;
   file.mv(`./public/admin_photo/${fileName}`, async (err) => {
-    if (err) return res.status(500).json({ msg: "error woi" });
+    if (err) return res.status(500).json({ msg: err.message });
     try {
       await AdminModel.create({
         name: nickname,
@@ -253,7 +253,7 @@ export const Login = async (req, res) => {
   res.cookie("refreshToken", refreshToken, {
     sameSite: "none",
     secure: false,
-    domain: "http://localhost:7007",
+    domain: "localhost:7007",
     httpOnly: true
   });
   res.status(200).json(admin);
