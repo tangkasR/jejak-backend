@@ -22,7 +22,7 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: true
+    origin: "http://localhost:7007"
   })
 );
 app.use(cookieParser());
