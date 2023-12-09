@@ -256,10 +256,9 @@ export const Login = async (req, res) => {
   );
   res.header("Access-Control-Allow-Credentials", true);
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: false,
+    httpOnly: true,
     maxAge: 60 * 60 * 1000,
-    domain:
-      "https://jejak-backend-g0om1m48e-tangkas-risdiantos-projects.vercel.app"
+    sameSite: "none"
   });
   res.status(200).json(admin);
 };
