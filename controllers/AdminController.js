@@ -258,7 +258,8 @@ export const Login = async (req, res) => {
   res.cookie("refreshToken", refreshToken, {
     httpOnly: false,
     maxAge: 60 * 60 * 1000,
-    domain: "localhost"
+    domain:
+      "https://jejak-backend-g0om1m48e-tangkas-risdiantos-projects.vercel.app"
   });
   res.status(200).json(admin);
 };
