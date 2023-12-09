@@ -13,9 +13,13 @@ export const refreshToken = async (req, res) => {
     if (!admin) return res.sendStatus(403);
 
     const adminId = admin.id;
-    refreshToken = jwt.sign({ adminId }, process.env.REFRESH_TOKEN, {
-      expiresIn: "1d"
-    });
+    refreshToken = jwt.sign(
+      { adminId },
+      "dasdf213rwq079123478khh12kehkwe89789ysudkh12987ydhkhasdty638tasd",
+      {
+        expiresIn: "1d"
+      }
+    );
     await AdminModel.update(
       {
         token: refreshToken
