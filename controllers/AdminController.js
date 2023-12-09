@@ -47,14 +47,11 @@ export const createAdmin = async (req, res) => {
   const ext = path.extname(file.name);
   const fileName = Math.random() + ext;
   const url = `https://jejak-backend-ef3c7rsig-tangkas-risdiantos-projects.vercel.app/admin_photo/${fileName}`;
-  const allowedType = [".png", ".jpeg", ".jpg"];
-  if (!allowedType.includes(ext.toLowerCase())) {
-    return res.status(422).json({ msg: "Invalid image" });
-  }
+
   const hashPassword = await argon2.hash(password);
   const imgName = file.md5;
-  file.mv(`${__dirname}/public/admin_photo/${fileName}`, async (err) => {
-    if (err) return res.status(500).json({ msg: err.message });
+  file.mv(`./public/admin_photo/${fileName}`, async (err) => {
+    if (err) return res.status(500).json({ msg: "error woi" });
     try {
       await AdminModel.create({
         name: nickname,
