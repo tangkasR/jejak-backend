@@ -234,13 +234,11 @@ export const Login = async (req, res) => {
     return res.status(404).json({ msg: "Email atau password salah" });
   }
   const adminId = admin.id;
-  const refreshToken = jwt.sign(
-    { adminId },
-    "dasdf213rwq079123478khh12kehkwe89789ysudkh12987ydhkhasdty638tasd",
-    {
-      expiresIn: "1d"
-    }
-  );
+  const SECRET_KEY =
+    "dasdf213rwq079123478khh12kehkwe89789ysudkh12987ydhkhasdty638tasd";
+  const refreshToken = jwt.sign({ adminId }, SECRET_KEY, {
+    expiresIn: "1d"
+  });
   await AdminModel.update(
     {
       token: refreshToken
