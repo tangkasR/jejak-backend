@@ -50,7 +50,7 @@ export const createAdmin = async (req, res) => {
 
   const hashPassword = await argon2.hash(password);
   const imgName = file.md5;
-  file.mv(`${__dirname}/public/admin_photo/${fileName}`, async (err) => {
+  file.mv(`./public/admin_photo/${fileName}`, async (err) => {
     if (err) return res.status(500).json({ msg: "error woi" });
     try {
       await AdminModel.create({
