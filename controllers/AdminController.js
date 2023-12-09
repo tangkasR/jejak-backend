@@ -253,7 +253,7 @@ export const Login = async (req, res) => {
   res.cookie("refreshToken", refreshToken, {
     sameSite: "none",
     secure: false,
-    domain: "localhost",
+    domain: "http://localhost:7007",
     httpOnly: true
   });
   res.status(200).json(admin);
