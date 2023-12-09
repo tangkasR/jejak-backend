@@ -9,15 +9,14 @@ import HotelRoute from "./routes/HotelRoute.js";
 import ReviewHotelRoute from "./routes/ReviewHotelRoute.js";
 import GalleryRoute from "./routes/GalleryRoute.js";
 import cookieParser from "cookie-parser";
-import session from "express-session";
 import db from "./config/Database.js";
 dotenv.config();
 const app = express();
 
 // migrasi
-// (async () => {
-//   await db.sync();
-// })();
+(async () => {
+  await db.sync();
+})();
 // end migrasi
 
 app.use(
