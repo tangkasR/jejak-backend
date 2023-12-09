@@ -253,8 +253,7 @@ export const Login = async (req, res) => {
   );
   res.cookie("refreshToken", refreshToken, {
     httpOnly: false,
-    maxAge: 60 * 60 * 1000,
-    secure: true
+    maxAge: 60 * 60 * 1000
   });
   res.status(200).json(admin);
 };
