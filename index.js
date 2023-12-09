@@ -14,9 +14,9 @@ dotenv.config();
 const app = express();
 
 // migrasi
-(async () => {
-  await db.sync();
-})();
+// (async () => {
+//   await db.sync();
+// })();
 // end migrasi
 
 app.use(
