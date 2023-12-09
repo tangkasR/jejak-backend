@@ -256,7 +256,7 @@ export const Login = async (req, res) => {
   );
   res.header("Access-Control-Allow-Credentials", true);
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
+    httpOnly: false,
     maxAge: 60 * 60 * 1000
   });
   res.status(200).json(admin);
