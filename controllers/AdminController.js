@@ -251,10 +251,9 @@ export const Login = async (req, res) => {
   );
 
   res.cookie("refreshToken", refreshToken, {
-    sameSite: "none",
-    secure: false,
-    domain: "localhost:7007",
-    httpOnly: true
+    httpOnly: true,
+    maxAge: 3 * 60 * 1000,
+    sameSite: "none"
   });
   res.status(200).json(admin);
 };
