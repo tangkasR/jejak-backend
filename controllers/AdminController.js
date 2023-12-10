@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 
 export const getAdmin = async (req, res) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.params.token;
     if (!refreshToken) return res.sendStatus(204);
 
     const response = await AdminModel.findOne({
@@ -79,7 +79,7 @@ export const updateAdmin = async (req, res) => {
   ) {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
-  const refreshToken = req.cookies.refreshToken;
+  const refreshToken = req.params.token;
   if (!refreshToken) return res.sendStatus(204);
 
   const admin = await AdminModel.findOne({
@@ -179,7 +179,7 @@ export const updateAdmin = async (req, res) => {
 };
 export const deleteAdmin = async (req, res) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken = req.params.token;
     if (!refreshToken) return res.sendStatus(204);
 
     const admin = await AdminModel.findOne({
@@ -252,13 +252,13 @@ export const Login = async (req, res) => {
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true,
-    maxAge: 3 * 60 * 1000,
+    maxAge: 3 * 60 * 1000
   });
   res.status(200).json(admin);
 };
 
 export const Logout = async (req, res) => {
-  const refreshToken = req.cookies.refreshToken;
+  const refreshToken = req.params.token;
   if (!refreshToken) return res.sendStatus(204);
 
   const admin = await AdminModel.findOne({
