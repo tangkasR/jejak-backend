@@ -254,7 +254,7 @@ export const Login = async (req, res) => {
     httpOnly: true,
     maxAge: 3 * 60 * 1000
   });
-  res.status(200).json(admin);
+  res.status(200).json(refreshToken);
 };
 
 export const Logout = async (req, res) => {
