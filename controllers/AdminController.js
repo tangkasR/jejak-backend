@@ -207,7 +207,6 @@ export const deleteAdmin = async (req, res) => {
           id: adminId
         }
       });
-      res.clearCookie("refreshToken");
       res.status(200).json({ msg: "Berhasil menghapus akun" });
     } catch (error) {
       console.log(error);
@@ -249,37 +248,21 @@ export const Login = async (req, res) => {
       }
     }
   );
-
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    maxAge: 3 * 60 * 1000
-  });
   res.status(200).json(refreshToken);
 };
 
 export const Logout = async (req, res) => {
   const refreshToken = req.params.token;
   if (!refreshToken) return res.sendStatus(204);
-
-  const admin = await AdminModel.findOne({
-    where: {
-      token: refreshToken
-    }
-  });
-
-  if (!admin) return res.sendStatus(204);
-
-  const adminId = admin.id;
   await AdminModel.update(
     {
       token: null
     },
     {
       where: {
-        id: adminId
+        token: refreshToken
       }
     }
   );
-  res.clearCookie("refreshToken");
   res.status(200).json(admin);
 };
