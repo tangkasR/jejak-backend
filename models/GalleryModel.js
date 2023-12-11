@@ -6,19 +6,11 @@ const { DataTypes } = Sequelize;
 const GalleryModel = db.define(
   "gallery",
   {
-    img_name: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    img_type: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
     url: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    public_id: {
+    img_id: {
       type: DataTypes.STRING,
       allowNull: false
     }

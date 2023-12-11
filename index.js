@@ -8,15 +8,8 @@ import WisataRoute from "./routes/WisataRoute.js";
 import HotelRoute from "./routes/HotelRoute.js";
 import ReviewHotelRoute from "./routes/ReviewHotelRoute.js";
 import GalleryRoute from "./routes/GalleryRoute.js";
-import cookieParser from "cookie-parser";
 import db from "./config/Database.js";
 import { v2 as cloudinary } from "cloudinary";
-
-cloudinary.config({
-  cloud_name: "dkfbtqauu",
-  api_key: "738952699556885",
-  api_secret: "RmN7Q1fBx893xsELWyVs7E4C3kA"
-});
 
 dotenv.config();
 const app = express();

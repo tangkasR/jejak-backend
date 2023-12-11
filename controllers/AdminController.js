@@ -1,11 +1,7 @@
 import AdminModel from "../models/AdminModel.js";
 import argon2 from "argon2";
-import path from "path";
-import fs from "fs";
 import jwt from "jsonwebtoken";
-import upload from "../utils/Multer.js";
-import { v2 as cloudinary } from "cloudinary";
-import { error } from "console";
+import cloudinary from "../utils/Cloudinary.js";
 
 export const getAdmin = async (req, res) => {
   try {
@@ -28,12 +24,10 @@ export const createAdmin = async (req, res) => {
     !req.body.jenis_kelamin ||
     !req.body.email ||
     !req.body.password ||
-    !req.body.confirmPassword
+    !req.body.confirmPassword ||
+    !req.body.file
   ) {
     return res.status(400).json({ msg: "Tolong masukan semua inputan" });
-  }
-  if (!req.files) {
-    return res.status(400).json({ msg: "Tolong masukan foto" });
   }
   if (req.body.password !== req.body.confirmPassword) {
     return res
@@ -46,41 +40,28 @@ export const createAdmin = async (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const hashPassword = await argon2.hash(password);
-  const file = req.files.file;
-  upload.single("file")(req, res, (err) => {
-    if (err) return res.status(500).json({ msg: err.message });
+  const file = req.body.file;
 
-    console.log("uhuy");
-    const { orginalname, mimetype, buffer } = file;
-
-    cloudinary.uploader.upload_stream(async (error, result) => {
-      if (error) return res.status(500).json({ msg: error.message });
-
-      const { public_id } = result;
-      const url = cloudinary.url(public_id, {
-        width: 300,
-        height: 300,
-        crop: "fill"
-      });
-
-      try {
-        await AdminModel.create({
-          name: nickname,
-          jenis_kelamin: jenis_kelamin,
-          role: role,
-          email: email,
-          password: hashPassword,
-          img_name: orginalname,
-          img_type: mimetype,
-          url: url,
-          public_id: public_id
-        });
-        res.status(201).json({ msg: "Behasil registrasi" });
-      } catch (error) {
-        console.log(error.message);
-      }
+  try {
+    const result = await cloudinary.uploader.upload(file, {
+      folder: "admins"
     });
-  });
+    if (result.length !== 0) {
+      await AdminModel.create({
+        name: nickname,
+        jenis_kelamin: jenis_kelamin,
+        role: role,
+        email: email,
+        password: hashPassword,
+        url: result.url,
+        img_id: result.public_id
+      });
+      res.status(201).json({ msg: "Behasil registrasi" });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ msg: error.message });
+  }
 };
 export const updateAdmin = async (req, res) => {
   if (
@@ -88,7 +69,8 @@ export const updateAdmin = async (req, res) => {
     !req.body.jenis_kelamin ||
     !req.body.email ||
     !req.body.password ||
-    !req.body.confirmPassword
+    !req.body.confirmPassword ||
+    !req.body.file
   ) {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
@@ -102,92 +84,43 @@ export const updateAdmin = async (req, res) => {
   });
   if (!admin) return res.status(404).json({ msg: "Admin tidak ditemukan" });
 
-  let fileName = "";
-  let imgName = "";
-  let isImageExist = false;
-  const files = fs.readdirSync("./public/admin_photo/");
-  files.forEach((file) => {
-    if (file === admin.image) {
-      isImageExist = true;
-    }
-  });
-  if (!req.files) {
-    fileName = admin.image;
-    imgName = admin.img_name;
-  } else {
-    const file = req.files.file;
-    imgName = file.md5;
-    fileName = admin.image;
-
-    if (isImageExist === false) {
-      const ext = path.extname(file.name);
-      const allowedType = [".png", ".jpeg", ".jpg"];
-      fileName = Math.random() + ext;
-
-      if (!allowedType.includes(ext.toLowerCase())) {
-        return res.status(422).json({ msg: "Invalid image" });
-      }
-      const filepath = `./public/admin_photo/${admin.image}`;
-      file.mv(`./public/admin_photo/${fileName}`, (err) => {
-        if (err) return res.status(500).json({ msg: err.message });
-      });
-    }
-    if (imgName !== admin.img_name && isImageExist === true) {
-      const ext = path.extname(file.name);
-      const allowedType = [".png", ".jpeg", ".jpg"];
-      fileName = Math.random() + ext;
-
-      if (!allowedType.includes(ext.toLowerCase())) {
-        return res.status(422).json({ msg: "Invalid image" });
-      }
-      const filepath = `./public/admin_photo/${admin.image}`;
-      fs.unlinkSync(filepath);
-
-      file.mv(`./public/admin_photo/${fileName}`, (err) => {
-        if (err) return res.status(500).json({ msg: err.message });
-      });
-    }
-  }
-
-  const url = `${req.protocol}://${req.get("host")}/admin_photo/${fileName}`;
-  const nickname = req.body.name;
-  const jenis_kelamin = req.body.jenis_kelamin;
+  const { name, email, password, confirmPassword, jenis_kelamin, file } =
+    req.body;
   const role = "admin";
-  const email = req.body.email;
-  const password = req.body.password;
-  const confirmPassword = req.body.confirmPassword;
-  let hashPassword;
-  if (password === "" || password === null) {
-    hashPassword = user.password;
-  } else {
-    hashPassword = await argon2.hash(password);
-  }
   if (password !== confirmPassword) {
     res
       .status(400)
       .json({ msg: "Password dan konfirmasi password tidak sesuai" });
   }
-  try {
-    await AdminModel.update(
-      {
-        name: nickname,
-        jenis_kelamin: jenis_kelamin,
-        role: role,
-        email: email,
-        password: hashPassword,
-        image: fileName,
-        url: url,
-        img_name: imgName
-      },
-      {
-        where: {
-          id: admin.id
+  const hashPassword = await argon2.hash(password);
+
+  const imgId = admin.img_id;
+  await cloudinary.uploader.destroy(imgId);
+  const result = await cloudinary.uploader.upload(file, {
+    folder: "admins"
+  });
+  if (result.length !== 0) {
+    try {
+      await AdminModel.update(
+        {
+          name: name,
+          jenis_kelamin: jenis_kelamin,
+          role: role,
+          email: email,
+          password: hashPassword,
+          url: result.url,
+          img_id: result.public_id
+        },
+        {
+          where: {
+            id: admin.id
+          }
         }
-      }
-    );
-    res.status(200).json({ msg: "admin berhasil Update" });
-  } catch (error) {
-    res.status(400).json({ msg: error.message });
+      );
+      res.status(200).json({ msg: "admin berhasil Update" });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
   }
 };
 export const deleteAdmin = async (req, res) => {
@@ -202,19 +135,9 @@ export const deleteAdmin = async (req, res) => {
     });
     const adminId = admin.id;
     if (!admin) return res.status(404).json({ msg: "admin tidak ditemukan" });
-    let isImageExist = false;
-    const files = fs.readdirSync("./public/admin_photo/");
-    files.forEach((file) => {
-      if (file === admin.image) {
-        isImageExist = true;
-      }
-    });
     try {
-      const filepath = `./public/admin_photo/${admin.image}`;
-
-      if (isImageExist === true) {
-        fs.unlinkSync(filepath);
-      }
+      const imgId = admin.img_id;
+      await cloudinary.uploader.destroy(imgId);
       await AdminModel.destroy({
         where: {
           id: adminId
@@ -277,5 +200,4 @@ export const Logout = async (req, res) => {
       }
     }
   );
-  res.status(200).json(admin);
 };
