@@ -5,13 +5,14 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "serve": "node index.js"
+    "serve": "nodemon index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "argon2": "^0.31.1",
+    "cloudinary": "^1.41.0",
     "connect-session-sequelize": "^7.1.7",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -20,8 +21,12 @@
     "express-fileupload": "^1.4.1",
     "express-session": "^1.17.3",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
     "mysql2": "^3.0.0",
     "nodemon": "^3.0.1",
     "sequelize": "^6.33.0"
+  },
+  "dependencies": {
+    "body-parser": "^1.20.2"
   }
 }

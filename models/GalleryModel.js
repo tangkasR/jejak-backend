@@ -1,12 +1,16 @@
-import { Sequelize } from 'sequelize';
-import db from '../config/Database.js';
-import WisataModel from './WisataModel.js';
+import { Sequelize } from "sequelize";
+import db from "../config/Database.js";
+import WisataModel from "./WisataModel.js";
 const { DataTypes } = Sequelize;
 
 const GalleryModel = db.define(
-  'gallery',
+  "gallery",
   {
-    image: {
+    img_name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    img_type: {
       type: DataTypes.STRING,
       allowNull: false
     },
@@ -14,10 +18,10 @@ const GalleryModel = db.define(
       type: DataTypes.STRING,
       allowNull: false
     },
-    img_name: {
+    public_id: {
       type: DataTypes.STRING,
       allowNull: false
-    },
+    }
   },
   {
     freezeTableName: true

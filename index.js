@@ -10,6 +10,14 @@ import ReviewHotelRoute from "./routes/ReviewHotelRoute.js";
 import GalleryRoute from "./routes/GalleryRoute.js";
 import cookieParser from "cookie-parser";
 import db from "./config/Database.js";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: "dkfbtqauu",
+  api_key: "738952699556885",
+  api_secret: "RmN7Q1fBx893xsELWyVs7E4C3kA"
+});
+
 dotenv.config();
 const app = express();
 
@@ -26,7 +34,6 @@ app.use(
   })
 );
 
-app.use(cookieParser());
 app.use(express.json());
 app.use(fileUpload());
 app.use(express.static("public"));
@@ -37,6 +44,6 @@ app.use(WisataRoute);
 app.use(HotelRoute);
 app.use(GalleryRoute);
 
-app.listen(process.env.APP_PORT, () => {
-  console.log(`Server is running in port ${process.env.APP_PORT}...`);
+app.listen(5000, () => {
+  console.log(`Server is running in port 5000...`);
 });

@@ -1,10 +1,10 @@
-import { Sequelize } from 'sequelize';
-import db from '../config/Database.js';
-import WisataModel from './WisataModel.js';
+import { Sequelize } from "sequelize";
+import db from "../config/Database.js";
+import WisataModel from "./WisataModel.js";
 const { DataTypes } = Sequelize;
 
 const HotelModel = db.define(
-  'hotel',
+  "hotel",
   {
     nama: {
       type: DataTypes.STRING,
@@ -18,7 +18,11 @@ const HotelModel = db.define(
       type: DataTypes.STRING,
       allowNull: false
     },
-    image: {
+    img_name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    img_type: {
       type: DataTypes.STRING,
       allowNull: false
     },
@@ -26,7 +30,7 @@ const HotelModel = db.define(
       type: DataTypes.STRING,
       allowNull: false
     },
-    img_name: {
+    public_id: {
       type: DataTypes.STRING,
       allowNull: false
     },

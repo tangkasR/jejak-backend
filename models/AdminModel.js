@@ -26,7 +26,11 @@ const AdminModel = db.define(
       type: DataTypes.STRING,
       allowNull: false
     },
-    image: {
+    img_name: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    img_type: {
       type: DataTypes.STRING,
       allowNull: false
     },
@@ -34,7 +38,7 @@ const AdminModel = db.define(
       type: DataTypes.STRING,
       allowNull: false
     },
-    img_name: {
+    public_id: {
       type: DataTypes.STRING,
       allowNull: false
     },

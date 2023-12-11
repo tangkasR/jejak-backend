@@ -3,6 +3,9 @@ import argon2 from "argon2";
 import path from "path";
 import fs from "fs";
 import jwt from "jsonwebtoken";
+import upload from "../utils/Multer.js";
+import { v2 as cloudinary } from "cloudinary";
+import { error } from "console";
 
 export const getAdmin = async (req, res) => {
   try {
@@ -42,31 +45,41 @@ export const createAdmin = async (req, res) => {
   const role = "admin";
   const email = req.body.email;
   const password = req.body.password;
-  const file = req.files.file;
-
-  const ext = path.extname(file.name);
-  const fileName = Math.random() + ext;
-  const url = `https://jejak-backend-ef3c7rsig-tangkas-risdiantos-projects.vercel.app/admin_photo/${fileName}`;
-
   const hashPassword = await argon2.hash(password);
-  const imgName = file.md5;
-  file.mv(__dirname + `/public/admin_photo/${fileName}`, async (err) => {
+  const file = req.files.file;
+  upload.single("file")(req, res, (err) => {
     if (err) return res.status(500).json({ msg: err.message });
-    try {
-      await AdminModel.create({
-        name: nickname,
-        jenis_kelamin: jenis_kelamin,
-        role: role,
-        email: email,
-        password: hashPassword,
-        image: fileName,
-        url: url,
-        img_name: imgName
+
+    console.log("uhuy");
+    const { orginalname, mimetype, buffer } = file;
+
+    cloudinary.uploader.upload_stream(async (error, result) => {
+      if (error) return res.status(500).json({ msg: error.message });
+
+      const { public_id } = result;
+      const url = cloudinary.url(public_id, {
+        width: 300,
+        height: 300,
+        crop: "fill"
       });
-      res.status(201).json({ msg: "Behasil registrasi" });
-    } catch (error) {
-      console.log(error.message);
-    }
+
+      try {
+        await AdminModel.create({
+          name: nickname,
+          jenis_kelamin: jenis_kelamin,
+          role: role,
+          email: email,
+          password: hashPassword,
+          img_name: orginalname,
+          img_type: mimetype,
+          url: url,
+          public_id: public_id
+        });
+        res.status(201).json({ msg: "Behasil registrasi" });
+      } catch (error) {
+        console.log(error.message);
+      }
+    });
   });
 };
 export const updateAdmin = async (req, res) => {
