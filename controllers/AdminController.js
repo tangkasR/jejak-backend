@@ -190,14 +190,25 @@ export const Login = async (req, res) => {
 export const Logout = async (req, res) => {
   const refreshToken = req.params.token;
   if (!refreshToken) return res.sendStatus(204);
-  await AdminModel.update(
-    {
-      token: null
-    },
-    {
+  try {
+    const admin = await AdminModel.findOne({
       where: {
         token: refreshToken
       }
-    }
-  );
+    });
+    if (!admin) return res.status(404).json({ msg: "Admin tidak ditemukan" });
+    await AdminModel.update(
+      {
+        token: null
+      },
+      {
+        where: {
+          token: admin.token
+        }
+      }
+    );
+    return res.status(200).json({ msg: "behasil logout" });
+  } catch (error) {
+    console.log(error);
+  }
 };

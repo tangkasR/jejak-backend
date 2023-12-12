@@ -3,8 +3,7 @@ import ReviewModel from "../models/ReviewModel.js";
 import HotelModel from "../models/HotelModel.js";
 import ReviewHotelModel from "../models/ReviewHotelModel.js";
 import GalleryModel from "../models/GalleryModel.js";
-import path from "path";
-import fs from "fs";
+import cloudinary from "../utils/Cloudinary.js";
 
 export const getWisata = async (req, res) => {
   try {
@@ -33,36 +32,27 @@ export const createWisata = async (req, res) => {
     !req.body.lokasi ||
     !req.body.deskripsi ||
     !req.body.latitude ||
-    !req.body.longitude
+    !req.body.longitude ||
+    !req.body.file
   ) {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
-  if (!req.files) {
-    return res.status(400).json({ msg: "File gambar tolong dimasukan" });
-  }
 
-  const { nama, kategori, lokasi, deskripsi, latitude, longitude } = req.body;
-  const file = req.files.file;
-  const ext = path.extname(file.name);
-  const fileName = Math.random() + ext;
-  const url = `${req.protocol}://${req.get("host")}/wisata_photo/${fileName}`;
-  const allowedType = [".png", ".jpeg", ".jpg"];
-  if (!allowedType.includes(ext.toLowerCase())) {
-    return res.status(422).json({ msg: "Invalid image" });
-  }
-  const imgName = file.md5;
+  const { nama, kategori, lokasi, deskripsi, latitude, longitude, file } =
+    req.body;
 
-  file.mv(`./public/wisata_photo/${fileName}`, async (err) => {
-    if (err) return res.status(500).json({ msg: err.message });
+  const result = await cloudinary.uploader.upload(file, {
+    folder: "wisata"
+  });
+  if (result.length !== 0) {
     try {
       await WisataModel.create({
         nama: nama,
         kategori: kategori,
         lokasi: lokasi,
         deskripsi: deskripsi,
-        image: fileName,
-        url: url,
-        img_name: imgName,
+        url: result.url,
+        img_id: result.public_id,
         latitude: latitude,
         longitude: longitude
       });
@@ -70,7 +60,7 @@ export const createWisata = async (req, res) => {
     } catch (error) {
       console.log(error.message);
     }
-  });
+  }
 };
 export const updateWisata = async (req, res) => {
   if (
@@ -79,7 +69,8 @@ export const updateWisata = async (req, res) => {
     !req.body.lokasi ||
     !req.body.deskripsi ||
     !req.body.latitude ||
-    !req.body.longitude
+    !req.body.longitude ||
+    !req.body.file
   ) {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
@@ -90,54 +81,36 @@ export const updateWisata = async (req, res) => {
   });
   if (!wisata) return res.status(404).json({ msg: "wisata tidak ditemukan" });
 
-  let fileName = "";
-  let imgName = "";
-  if (!req.files) {
-    fileName = wisata.image;
-    imgName = wisata.img_name;
-  } else {
-    const file = req.files.file;
-    imgName = file.md5;
-    fileName = wisata.image;
-    if (imgName !== wisata.img_name) {
-      const ext = path.extname(file.name);
-      const allowedType = [".png", ".jpeg", ".jpg"];
-      if (!allowedType.includes(ext.toLowerCase())) {
-        return res.status(422).json({ msg: "Invalid image" });
-      }
-      fileName = Math.random() + ext;
-      const filepath = `./public/wisata_photo/${wisata.image}`;
-      fs.unlinkSync(filepath);
-      file.mv(`./public/wisata_photo/${fileName}`, (err) => {
-        if (err) return res.status(500).json({ msg: err.message });
-      });
-    }
-  }
+  const { nama, kategori, lokasi, deskripsi, latitude, longitude, file } =
+    req.body;
 
-  const { nama, kategori, lokasi, deskripsi, latitude, longitude } = req.body;
-  const url = `${req.protocol}://${req.get("host")}/wisata_photo/${fileName}`;
   try {
+    const imgId = wisata.img_id;
+    await cloudinary.uploader.destroy(imgId);
+
+    const result = await cloudinary.uploader.upload(file, {
+      folder: "wisata"
+    });
     await WisataModel.update(
       {
         nama: nama,
         kategori: kategori,
         lokasi: lokasi,
         deskripsi: deskripsi,
-        image: fileName,
-        url: url,
-        img_name: imgName,
+        url: result.url,
+        img_id: result.public_id,
         latitude: latitude,
         longitude: longitude
       },
       {
         where: {
-          id: req.params.id
+          id: wisata.id
         }
       }
     );
     res.status(200).json({ msg: "Wisata berhasil diubah" });
   } catch (error) {
-    console.log(error.message);
+    console.log(error);
   }
 };
 export const deleteWisata = async (req, res) => {
@@ -155,8 +128,9 @@ export const deleteWisata = async (req, res) => {
     if (hotels) {
       hotels.forEach(async (hotel) => {
         if (hotel.wisatumId === wisata.id) {
-          const filepath = `./public/hotel_photo/${hotel.image}`;
-          fs.unlinkSync(filepath);
+          const imgId = hotel.img_id;
+          await cloudinary.uploader.destroy(imgId);
+
           await HotelModel.destroy({
             where: {
               id: hotel.id
@@ -195,8 +169,9 @@ export const deleteWisata = async (req, res) => {
     if (gallery) {
       gallery.forEach(async (data) => {
         if (data.wisatumId === wisata.id) {
-          const filepath = `./public/gallery_photo/${data.image}`;
-          fs.unlinkSync(filepath);
+          const imgId = data.img_id;
+          await cloudinary.uploader.destroy(imgId);
+
           await GalleryModel.destroy({
             where: {
               id: data.id
@@ -207,11 +182,12 @@ export const deleteWisata = async (req, res) => {
     }
     // end delete gallery yang berelasi
     try {
-      const filepath = `./public/wisata_photo/${wisata.image}`;
-      fs.unlinkSync(filepath);
+      const imgId = wisata.img_id;
+      await cloudinary.uploader.destroy(imgId);
+
       await WisataModel.destroy({
         where: {
-          id: req.params.id
+          id: wisata.id
         }
       });
       res.status(200).json({ msg: "wisata berhasil dihapus" });

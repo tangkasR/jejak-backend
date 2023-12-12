@@ -1,7 +1,6 @@
 import GalleryModel from "../models/GalleryModel.js";
 import WisataModel from "../models/WisataModel.js";
-import path from "path";
-import fs from "fs";
+import cloudinary from "../utils/Cloudinary.js";
 
 export const getGalleryByWisataId = async (req, res) => {
   try {
@@ -38,33 +37,26 @@ export const getGalleryById = async (req, res) => {
 };
 
 export const createGallery = async (req, res) => {
-  if (!req.files) {
+  if (!req.body.file) {
     return res.status(400).json({ msg: "File gambar tolong dimasukan" });
   }
   const id = req.params.id;
-  const file = req.files.file;
-  const ext = path.extname(file.name);
-  const fileName = Math.random() + ext;
-  const url = `${req.protocol}://${req.get("host")}/gallery_photo/${fileName}`;
-  const allowedType = [".png", ".jpeg", ".jpg"];
-  if (!allowedType.includes(ext.toLowerCase())) {
-    return res.status(422).json({ msg: "Invalid image" });
-  }
-  const imgName = file.md5;
-  file.mv(`./public/gallery_photo/${fileName}`, async (err) => {
-    if (err) return res.status(500).json({ msg: err.message });
+  const file = req.body.file;
+  const result = await cloudinary.uploader.upload(file, {
+    folder: "galeri"
+  });
+  if (result.length !== 0) {
     try {
       await GalleryModel.create({
-        image: fileName,
-        url: url,
-        img_name: imgName,
+        url: result.url,
+        img_id: result.public_id,
         wisatumId: id
       });
       res.status(201).json({ msg: "Foto berhasil ditambah" });
     } catch (error) {
       console.log(error.message);
     }
-  });
+  }
 };
 
 export const deleteGallery = async (req, res) => {
@@ -76,11 +68,12 @@ export const deleteGallery = async (req, res) => {
     });
     if (!foto) return res.status(404).json({ msg: "Foto tidak ditemukan" });
     try {
-      const filepath = `./public/gallery_photo/${foto.image}`;
-      fs.unlinkSync(filepath);
+      const imgId = foto.img_id;
+      await cloudinary.uploader.destroy(imgId);
+
       await GalleryModel.destroy({
         where: {
-          id: req.params.id
+          id: foto.id
         }
       });
       res.status(200).json({ msg: "Foto berhasil dihapus" });
