@@ -97,8 +97,8 @@ export const updateHotel = async (req, res) => {
   ) {
     return res.status(400).json({ msg: "Masukan semua inputan" });
   }
-  // const imgId = hotel.img_id;
-  // await cloudinary.uploader.destroy(imgId);
+  const imgId = hotel.img_id;
+  await cloudinary.uploader.destroy(imgId);
 
   const { nama, lokasi, deskripsi, wisatumId, file } = req.body;
   const result = await cloudinary.uploader.upload(file, {
