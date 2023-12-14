@@ -23,7 +23,7 @@ const app = express();
 app.use(
   cors({
     credentials: true,
-    origin: "https://jejalahjogjakarta.netlify.app"
+    origin: "https://jejalahjogjakarta.netlify.app" || "http://localhost:7007"
   })
 );
 
