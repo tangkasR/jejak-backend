@@ -1,0 +1,7 @@
+<h1>Getting Started</h1>
+<br>
+<p>Run the project using:</p>
+<p>npm run serve</p>
+<p>yarn serve</p>
+<br>
+<p>Deploy on Vercel</p>
