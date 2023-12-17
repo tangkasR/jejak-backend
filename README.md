@@ -1,3 +1,5 @@
+<h1>Installation</h1>
+<p>npm install</p>
 <h1>Getting Started</h1>
 <br>
 <p>Run the project using:</p>
